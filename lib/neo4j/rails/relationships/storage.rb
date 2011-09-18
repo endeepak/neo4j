@@ -14,6 +14,9 @@ module Neo4j
           @target_class = (dsl && dsl.target_class) || Neo4j::Rails::Model
           @outgoing_rels = []
           @incoming_rels = []
+          #######################
+          @persisted_rels = {}
+          @persisted_rels_loaded = false
         end
 
         def to_s #:nodoc:
@@ -74,9 +77,15 @@ module Neo4j
           end
 
           if @node.persisted?
-            @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
-              block.call rel.getOtherNode(@node._java_node).wrapper
+            if not @persisted_rels_loaded
+              @persisted_rels_loaded = true
+              @persisted_rels[dir] ||= []
+              @node._java_node.getRelationships(java_rel_type, dir_to_java(dir)).each do |rel|
+                end_node = rel.getOtherNode(@node._java_node).wrapper
+                @persisted_rels[dir] << end_node
+              end
             end
+            @persisted_rels[dir].each {|node| block.call node}
           end
         end
 
