@@ -53,6 +53,7 @@ module Neo4j
             unless method_defined?("#{rel_type}=".to_sym)
               class_eval <<-RUBY, __FILE__, __LINE__
                 def #{rel_type}=(other)
+                    attribute_will_change!(:'#{rel_type}')
                     dsl = _decl_rels_for(:'#{rel_type}')
                     storage = _create_or_get_storage_for_decl_rels(dsl)
                     rel = storage.single_relationship(dsl.dir)

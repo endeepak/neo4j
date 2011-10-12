@@ -193,6 +193,20 @@ describe Neo4j::Model do
       p.save
       p.should_not be_changed
     end
+
+    it "tracks relation changes" do
+      # IceCream.class_eval { define_attribute_methods [:ingredient] }
+      icecream = IceCream.create! :flavour => 'vanilla'
+
+      ingredient = Ingredient.create!(:name => 'sug')
+      icecream.ingredient = ingredient
+
+      icecream.changes[:ingredient].should == [nil, ingredient]
+      icecream.ingredient.should == ingredient
+      # puts icecream.changes.count
+      # puts icecream.changes.inspect
+      # icecream.ingredient_was.should be_nil
+    end
   end
 
   describe "find" do
