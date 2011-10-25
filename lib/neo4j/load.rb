@@ -3,13 +3,9 @@ module Neo4j
   # === Mixin responsible for loading Ruby wrappers for Neo4j Nodes and Relationship.
   #
   module Load
-    def wrapper(entity) # :nodoc:
-      return entity unless entity.property?(:_classname)
-      existing_instance = Neo4j::IdentityMap.get(entity)
-      return existing_instance if existing_instance
-      new_instance = to_class(entity[:_classname]).load_wrapper(entity)
-      Neo4j::IdentityMap.add(entity, new_instance)
-      new_instance
+    def wrapper(node) # :nodoc:
+      return node unless node.property?(:_classname)
+      to_class(node[:_classname]).load_wrapper(node)
     end
 
     def to_class(class_name) # :nodoc:
@@ -17,8 +13,8 @@ module Neo4j
     end
 
     # Checks if the given entity (node/relationship) or entity id (#neo_id) exists in the database.
-    def exist?(entity_or_entity_id, db = Neo4j.started_db)
-      id = entity_or_entity_id.kind_of?(Fixnum) ?  entity_or_entity_id : entity_or_entity_id.id
+    def exist?(node_or_node_id, db = Neo4j.started_db)
+      id = node_or_node_id.kind_of?(Fixnum) ?  node_or_node_id : node_or_node_id.id
       _load(id, db) != nil
     end
   end

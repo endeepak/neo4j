@@ -20,6 +20,7 @@ end
 
 def new_tx
   finish_tx if @tx
+  puts "NEW TX"
   @tx = Neo4j::Transaction.new
 end
 
