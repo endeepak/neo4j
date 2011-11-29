@@ -74,6 +74,26 @@ describe "Neo4j::Node#rule", :type => :transactional do
     Reader.young.should include(b)
   end
 
+  #Run this test alone to reproduce the issue
+  it "rule node created from concurrent threads" do
+    Neo4j.threadlocal_ref_node = nil
+    # Uncomment below code to fix the test || Try out other ways of fixing it!!
+    # Neo4j::Rule::Rule.rule_node_for(Reader).rule_node
+    # finish_tx
+    readers = []
+    threads = 2.times.collect do
+       Thread.new do
+          Neo4j.threadlocal_ref_node = nil
+          new_tx
+          readers << Reader.new(:age => 2)
+          finish_tx
+        end
+     end
+    threads.each(&:join)
+
+    Reader.all.to_a.should =~ readers
+  end
+
   it "rule only instances of the given class (no side effects)" do
     Reader.new :age => 25
     Reader.new :age => 4

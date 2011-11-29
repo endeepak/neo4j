@@ -10,6 +10,7 @@ module Neo4j
       include ToJava
       attr_reader :rules
       attr_reader :model_class
+      @@lock = Mutex.new
 
       def initialize(clazz)
         @model_class = eval("#{clazz}")
@@ -63,7 +64,10 @@ module Neo4j
 
       def rule_node
         clear_rule_node if ref_node_changed?
-        Thread.current[@rule_node_key] ||= find_node || create_node
+        # Uncomment below code to end up in a deadlock
+        # @@lock.synchronize do
+          return (Thread.current[@rule_node_key] ||= find_node || create_node)
+        # end
       end
 
       def ref_node_changed?
